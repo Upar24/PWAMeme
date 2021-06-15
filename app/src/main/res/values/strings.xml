@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">PWAMeme</string>
+    <string name="home_screen_route">Home</string>
+    <string name="add_screen_route">Add</string>
+    <string name="profile_screen_route">Profile</string>
+    <string name="search_screen_route">Search</string>
+    <string name="myprofile_screen_route">MyProfile</string>
+</resources>
