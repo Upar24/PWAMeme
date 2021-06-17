@@ -1,7 +1,9 @@
 package com.example.pwameme.data.remote
 
 import com.example.pwameme.data.local.entities.Meme
+import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.data.remote.requests.AccountRequest
+import com.example.pwameme.data.remote.requests.SearchRequest
 import com.example.pwameme.data.remote.responses.SimpleResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -20,6 +22,9 @@ interface MemeApi {
     suspend fun login(
         @Body loginRequest: AccountRequest
     ):Response<SimpleResponse>
+
+    @POST("/getuserinfo")
+    suspend fun getUserInfo():Response<User>
 
     @POST("/savetrash")
         suspend fun saveTrash(

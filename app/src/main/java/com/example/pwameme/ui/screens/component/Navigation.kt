@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,10 +18,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.pwameme.R
+import com.example.pwameme.ui.screens.auth.AuthViewModel
+import com.example.pwameme.ui.screens.component.ButtonClickItem
 import com.example.pwameme.ui.screens.component.ProfileInfoItem
+import com.example.pwameme.util.Constants.KEY_LOGGED_IN_PASSWORD
+import com.example.pwameme.util.Constants.KEY_LOGGED_IN_USERNAME
+import com.example.pwameme.util.Constants.LOGIN
+import com.example.pwameme.util.Constants.LOGOUT
+import com.example.pwameme.util.Constants.NO_PASSWORD
+import com.example.pwameme.util.Constants.NO_USERNAME
 
 @Composable
 fun PWAMemeTopNavigation(
@@ -40,7 +50,10 @@ fun PWAMemeTopNavigation(
                 painterResource(id = R.drawable.list),
                 contentDescription = "List Top Navigation",
                 modifier = Modifier
-                    .clickable(onClick = onIconClick)
+                    .clickable(
+                        onClick = onIconClick
+
+                    )
                     .padding(10.dp)
                     .align(Alignment.CenterVertically)
             )
@@ -62,14 +75,14 @@ fun PWAMemeTopNavigation(
             contentDescription = "Search Menu",
             modifier= Modifier
                 .clickable {
-                    navController.navigate("Search"){
+                    navController.navigate("Search") {
                         navController.graph.startDestinationRoute?.let {
-                            popUpTo(it){
-                                saveState=true
+                            popUpTo(it) {
+                                saveState = true
                             }
                         }
-                        launchSingleTop=true
-                        restoreState=true
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 }
                 .height(40.dp)
@@ -199,45 +212,59 @@ fun AppdrawerBody(
 fun AppdrawerFooter(
     navController: NavHostController,
     closeDrawerAction: () -> Unit
-){
+) {
+
+    val AuthVM = hiltViewModel<AuthViewModel>()
+    AuthVM.getDesc((if(AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) == NO_USERNAME) LOGIN else LOGOUT))
+
     Row(
-        modifier= Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(end = 15.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     )
     {
-        val desc="lOGIN"
+        val x by AuthVM.desc.observeAsState(if(AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) == NO_USERNAME)LOGIN else LOGOUT)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .height(50.dp)
                 .clickable { }
                 .padding(10.dp)
-        ){
-            Icon(painter = painterResource(id = R.drawable.yinyang), contentDescription ="theme",
+        ) {
+            Text(text = x)
+            Icon(
+                painter = painterResource(R.drawable.yinyang), contentDescription = "theme",
             )
             Text("Theme")
         }
-        Button(
+        ButtonClickItem(desc = x,
             onClick = {
                 closeDrawerAction()
-                    navController.navigate("LoginRoute"){
+                if (x == LOGIN) {
+                    navController.navigate("LoginRoute") {
                         navController.graph.startDestinationRoute?.let {
-                            popUpTo(it){
-                                saveState=true
+                            popUpTo(it) {
+                                saveState = true
                             }
                         }
-                        launchSingleTop=true
-                        restoreState=true
+                        launchSingleTop = true
+                        restoreState = true
+                        AuthVM.getDesc((if(AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) == NO_USERNAME) LOGIN else LOGOUT))
                     }
-            },
-            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.Blue)) {
-            Text(text=desc)
-        }
+                } else {
+                    AuthVM.sharedPref.edit().putString(KEY_LOGGED_IN_USERNAME, NO_USERNAME).apply()
+                    AuthVM.sharedPref.edit().putString(KEY_LOGGED_IN_PASSWORD, NO_PASSWORD).apply()
+                    navController.navigate("Home")
+                    AuthVM.getDesc((if(AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) == NO_USERNAME) LOGIN else LOGOUT))
+                }
+            }
+        )
     }
 }
+
+
 
 @Composable
 fun PWAMemeBottomNavigation(

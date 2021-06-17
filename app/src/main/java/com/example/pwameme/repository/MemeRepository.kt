@@ -14,9 +14,9 @@ class MemeRepository @Inject constructor(
     private val memeApi: MemeApi,
     private val context: Application
 ) {
-    suspend fun login(email: String, password: String) = withContext(Dispatchers.IO) {
+    suspend fun login(username: String, password: String) = withContext(Dispatchers.IO) {
         try {
-            val response = memeApi.login(AccountRequest(email, password))
+            val response = memeApi.login(AccountRequest(username, password))
             if (response.isSuccessful && response.body()!!.successful) {
                 Resource.success(response.body()?.message)
             } else {
@@ -27,9 +27,9 @@ class MemeRepository @Inject constructor(
         }
     }
 
-    suspend fun register(email: String, password: String) = withContext(Dispatchers.IO) {
+    suspend fun register(username: String, password: String) = withContext(Dispatchers.IO) {
         try {
-            val response = memeApi.register(AccountRequest(email, password))
+            val response = memeApi.register(AccountRequest(username, password))
             if (response.isSuccessful && response.body()!!.successful) {
                 Resource.success(response.body()?.message)
             } else {
@@ -37,6 +37,18 @@ class MemeRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Resource.error("Couldnt connect to the server, check your internet connection", null)
+        }
+    }
+    suspend fun getUserInfo() = withContext(Dispatchers.IO){
+        try {
+            val response = memeApi.getUserInfo()
+            if(response.isSuccessful){
+                Resource.success(response.body())
+            }else{
+                Resource.error(response.message(),null)
+            }
+        }catch(e:Exception){
+            Resource.error("Couldnt connect to the server",null)
         }
     }
 

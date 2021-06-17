@@ -6,11 +6,13 @@ import androidx.compose.material.ScaffoldState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.pwameme.R
+import com.example.pwameme.ui.screens.auth.AuthViewModel
 import kotlinx.coroutines.launch
 
 sealed class BottomNavigationScreens(
@@ -37,6 +39,7 @@ fun MainScreen(){
     val drawerNavigationItems= listOf(
         BottomNavigationScreens.MyProfile
     )
+
     Scaffold (
         topBar={
             PWAMemeTopNavigation(
@@ -45,7 +48,7 @@ fun MainScreen(){
                         scaffoldState.drawerState.open()
                     }
                 },
-                navController,
+                navController
             )
         },
         scaffoldState=scaffoldState,
@@ -57,7 +60,7 @@ fun MainScreen(){
                     }
                 },
                 navController =navController,
-                items = drawerNavigationItems
+                items = drawerNavigationItems,
             )
 
 
@@ -76,10 +79,12 @@ fun MainScreenNavigationConfiguration(
 ){
     NavHost(navController, startDestination = BottomNavigationScreens.Home.route){
         composable(BottomNavigationScreens.Home.route){
+            val authVM = hiltViewModel<AuthViewModel>()
             HomeScreen()
         }
         composable(BottomNavigationScreens.Add.route){
-            AddScreen()
+            val authVM = hiltViewModel<AuthViewModel>()
+            AddScreen(navController)
         }
         composable(BottomNavigationScreens.Profile.route){
             ProfileScreen()
@@ -91,10 +96,12 @@ fun MainScreenNavigationConfiguration(
             MyProfileScreen()
         }
         composable("LoginRoute"){
-            LoginScreen()
+            val authVM = hiltViewModel<AuthViewModel>()
+            LoginScreen(navController,authVM)
         }
         composable("RegisterRoute"){
-            RegisterScreen()
+            val authVM = hiltViewModel<AuthViewModel>()
+            RegisterScreen(navController,authVM)
         }
     }
 }
