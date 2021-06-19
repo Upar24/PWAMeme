@@ -1,6 +1,5 @@
 package com.example.pwameme.ui.screens.profile
 
-import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.repository.MemeRepository
-import com.example.pwameme.util.Constants.KEY_AVATAR
 import com.example.pwameme.util.Constants.NO_USERNAME
 import com.example.pwameme.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +19,8 @@ class ProfileViewModel @Inject constructor(
 ):ViewModel(){
     private val _getUserInfo = MutableLiveData<Resource<User>>()
     val getUserInfo : LiveData<Resource<User>> = _getUserInfo
+    private val _userInfoUpdate = MutableLiveData<Resource<String>>()
+    val userInfoUpdate : LiveData<Resource<String>> = _userInfoUpdate
 
     fun getUserInfo(username:String){
         _getUserInfo.postValue(Resource.loading(null))
@@ -31,6 +31,17 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result= repository.getUserInfo()
             _getUserInfo.postValue(result)
+        }
+    }
+    fun UpdateUser(user: User) {
+        _userInfoUpdate.postValue(Resource.loading(null))
+        if(user.password.isEmpty()){
+            _userInfoUpdate.postValue(Resource.error("The password can not be empty",null))
+            return
+        }
+        viewModelScope.launch {
+            val result = repository.updateUserInfo(user)
+            _userInfoUpdate.postValue(result)
         }
     }
 }

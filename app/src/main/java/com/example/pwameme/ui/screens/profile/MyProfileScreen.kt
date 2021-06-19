@@ -1,16 +1,17 @@
 package com.example.pwameme.ui.screens
 
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import com.example.pwameme.R
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,10 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.ui.screens.auth.AuthViewModel
-import com.example.pwameme.ui.screens.component.ProfileInfoItem
-import com.example.pwameme.ui.screens.component.ProgressBarItem
+import com.example.pwameme.ui.screens.component.*
 import com.example.pwameme.ui.screens.profile.ProfileViewModel
-import com.example.pwameme.util.Constants
 import com.example.pwameme.util.Constants.KEY_LOGGED_IN_USERNAME
 import com.example.pwameme.util.Constants.NO_USERNAME
 import com.example.pwameme.util.Status
@@ -33,12 +32,12 @@ fun MyProfileScreen(){
     val AuthVM = hiltViewModel<AuthViewModel>()
     val username = AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) ?: NO_USERNAME
 
+    ProfileVM.getUserInfo(username = username)
     val uiState = ProfileVM.getUserInfo.observeAsState()
-    ProfileVM.getUserInfo(username)
     uiState.value?.let {
         when(it.status){
             Status.SUCCESS ->{
-                UserInfo(true,it.data!!)
+                UserInfo(true,it.data!!,ProfileVM)
             }
             Status.ERROR -> {
                 Toast.makeText(
@@ -52,31 +51,92 @@ fun MyProfileScreen(){
     }
 }
 @Composable
-fun UserInfo(visible : Boolean = false, user: User){
-    if(visible){
+fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel){
+    val uiState = profileVM.userInfoUpdate.observeAsState()
+    uiState.value?.let {
+        when(it.status){
+            Status.SUCCESS ->{
+                Toast.makeText(
+                    LocalContext.current, uiState.value?.message ?: "Info successfully updated",
+                    Toast.LENGTH_SHORT).show()
+            }
+            Status.ERROR ->{
+                Toast.makeText(
+                    LocalContext.current, uiState.value?.message ?: "An unknown error occured",
+                    Toast.LENGTH_SHORT).show()
+            }
+            Status.LOADING ->{
+                ProgressBarItem()
+            }
+        }
+    }
+
+
+
+
+    var visible1 by remember { mutableStateOf(visible) }
+    var visible2 by remember { mutableStateOf(false) }
+    val bioState = remember {TextFieldState()}
+    val passwordState = remember {TextFieldState()}
+    var lmaoo by remember {mutableStateOf("R.drawable.image0")}
+    if(visible1){
         Spacer(modifier = Modifier.padding(30.dp))
         Column {
-            Image(painterResource(R.drawable.image), contentDescription ="apa aj" )
+            ImageProfileItem(lmaoo,user.username,{})
             Text(user.username)
             ProfileInfoItem(number = user.followers.size.toString(), desc = "followers")
             ProfileInfoItem(number = user.following.size.toString(), desc = "following")
             ProfileInfoItem(number = user.score.toString(), desc = "score")
             Text(text = "Bio")
             Text(text = user.bio)
+            ButtonClickItem(desc = "Edit",onClick = {visible1 = !visible1})
+        }
+    }else{
+        Column {
+            ImageProfileItem(oom = lmaoo, username =user.username,{})
+            Text(text = "Change Picture",modifier = Modifier.clickable{visible2 = true})
+            Text("Change Bio")
+            TextFieldOutlined(desc = "Bio",bioState)
+            Text("Change Password")
+            TextFieldOutlined(desc = "New Password",passwordState)
+            val user= User(
+                username = user.username,
+                password = passwordState.text,
+                following = user.following,
+                followers = user.followers,
+                image = lmaoo,
+                bio = bioState.text,
+                score = user.score,
+                _id = user._id)
+            ButtonClickItem(desc = "save", onClick = {
+                profileVM.UpdateUser(user)
+            })
         }
     }
+    if(visible2){
+        val listPic = listOf(
+            "R.drawable.image0",
+            "R.drawable.image1",
+            "R.drawable.image2",
+            "R.drawable.image3",
+            "R.drawable.image4",
+            "R.drawable.image5",
+            "R.drawable.image6"
+        )
+        Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+            for (i in 0..listPic.size - 1) {
+                val y = x(listPic[i])
+                val v = painterResource(id = y)
+                Image(v, contentDescription = "photo profile", modifier = Modifier
+                    .clickable { visible2 = !visible2
+                        lmaoo = listPic[i]}
+                    .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
+                    .size(80.dp),
+                    contentScale = ContentScale.Fit,
+                    alignment = Alignment.Center)
+            }
+        }
+
+    }
 }
-@Preview()
-@Composable
-fun x (){
-    UserInfo(true, user = User(
-        username = "Fina",
-        password = "1234",
-        followers = listOf("Fina","Alfionita","Sitanggang"),
-        following = listOf("Dea"),
-        image = "R.drawable.image",
-        bio = "I can hear your heart beating in the darkness",
-        score =  240,
-       _id =  "kjkjkjkjk"
-    ))
-}
+ 

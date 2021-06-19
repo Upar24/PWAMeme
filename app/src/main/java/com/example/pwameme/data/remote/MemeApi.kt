@@ -26,6 +26,9 @@ interface MemeApi {
     @POST("/getuserinfo")
     suspend fun getUserInfo():Response<User>
 
+    @POST("/updateuserinfo")
+    suspend fun updateUserInfo(@Body user: User):Response<ResponseBody>
+
     @POST("/savetrash")
         suspend fun saveTrash(
             @Body meme: Meme

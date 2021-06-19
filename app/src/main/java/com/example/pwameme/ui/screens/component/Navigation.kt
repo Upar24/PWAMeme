@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.pwameme.R
 import com.example.pwameme.ui.screens.auth.AuthViewModel
 import com.example.pwameme.ui.screens.component.ButtonClickItem
+import com.example.pwameme.ui.screens.component.ImageProfileItem
 import com.example.pwameme.ui.screens.component.ProfileInfoItem
 import com.example.pwameme.util.Constants.KEY_LOGGED_IN_PASSWORD
 import com.example.pwameme.util.Constants.KEY_LOGGED_IN_USERNAME
@@ -58,7 +59,7 @@ fun PWAMemeTopNavigation(
                     .align(Alignment.CenterVertically)
             )
             Text(
-                text = "CTForever",
+                text = "",
                 color = MaterialTheme.colors.onPrimary,
                 style = TextStyle(
                     fontWeight = FontWeight.Medium,
@@ -154,23 +155,7 @@ fun AppdrawerHeader(closeDrawerAction: () -> Unit
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painterResource(id = R.drawable.image),
-                    modifier = Modifier
-                        .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
-                        .size(80.dp),
-                    contentScale = ContentScale.Fit,
-                    alignment = Alignment.Center,
-                    contentDescription = "Foto Profile"
-                )
-                Text(
-                    text="Username",//sharedPref
-                    style=TextStyle(fontSize = 20.sp),
-                    modifier=Modifier.padding(bottom=5.dp),
-                    color= MaterialTheme.colors.primaryVariant
-                )
-            }
+            ImageProfileItem(oom = "R.drawable.image0", username = "Testing",{})
             ProfileInfoItem(number = "8", desc = "Coins" )
         }
     }

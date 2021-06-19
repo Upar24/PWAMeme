@@ -1,6 +1,6 @@
 package com.example.pwameme.ui.screens.component
 
-import android.app.AlertDialog
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,11 +8,15 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.pwameme.R
+
 class TextFieldState{
     var text : String by mutableStateOf("")
 }
@@ -136,4 +140,46 @@ fun AlertDialogItem(title:String,text:String,onClick: () -> Unit){
                 }
         },dismissButton = {}
     )
+}
+@Composable
+fun ImageProfileItem(oom:String,username:String,onClick: () -> Unit){
+    val x = x(oom)
+    val lam = painterResource(x)
+    Column(horizontalAlignment = Alignment.CenterHorizontally){
+        Image(lam,modifier = Modifier
+            .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
+            .size(80.dp),
+            contentScale = ContentScale.Fit,
+            alignment = Alignment.Center,contentDescription = "Photo Profile",
+        )
+        Text(
+            text=username,//sharedPref
+            style=TextStyle(fontSize = 20.sp),
+            modifier=Modifier.padding(bottom=5.dp),
+            color= MaterialTheme.colors.primaryVariant
+        )
+    }
+}
+@Composable
+fun ImageListItem(oom: String, onClick: () -> Unit) {
+    val x = x(oom)
+    val lam = painterResource(x)
+    Image(lam,contentDescription = null,modifier = Modifier.clickable { onClick }.padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
+        .size(80.dp),
+        contentScale = ContentScale.Fit,
+        alignment = Alignment.Center)
+    }
+
+fun x(string:String):Int{
+    var lmao = 0
+    when(string){
+        "R.drawable.image0" -> lmao = R.drawable.image0
+        "R.drawable.image1" -> lmao = R.drawable.image1
+        "R.drawable.image2" -> lmao = R.drawable.image2
+        "R.drawable.image3" -> lmao = R.drawable.image3
+        "R.drawable.image4" -> lmao = R.drawable.image4
+        "R.drawable.image5" -> lmao = R.drawable.image5
+        "R.drawable.image6" -> lmao = R.drawable.image6
+    }
+    return lmao
 }

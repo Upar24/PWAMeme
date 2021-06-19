@@ -2,6 +2,7 @@ package com.example.pwameme.repository
 
 import android.app.Application
 import com.example.pwameme.data.local.MemeDao
+import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.data.remote.MemeApi
 import com.example.pwameme.data.remote.requests.AccountRequest
 import com.example.pwameme.util.Resource
@@ -49,6 +50,18 @@ class MemeRepository @Inject constructor(
             }
         }catch(e:Exception){
             Resource.error("Couldnt connect to the server",null)
+        }
+    }
+    suspend fun updateUserInfo(user: User) = withContext(Dispatchers.IO){
+        try {
+            val response = memeApi.updateUserInfo(user)
+            if(response.isSuccessful){
+                Resource.success(response.message())
+            }else{
+                Resource.error(response.message(),null)
+            }
+        }catch (e:Exception){
+            Resource.error("Couldnt save the update profile, please try again", null)
         }
     }
 
