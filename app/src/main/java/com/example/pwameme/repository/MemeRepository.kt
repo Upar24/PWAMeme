@@ -2,9 +2,11 @@ package com.example.pwameme.repository
 
 import android.app.Application
 import com.example.pwameme.data.local.MemeDao
+import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.data.remote.MemeApi
 import com.example.pwameme.data.remote.requests.AccountRequest
+import com.example.pwameme.data.remote.requests.PointRequest
 import com.example.pwameme.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,6 +17,7 @@ class MemeRepository @Inject constructor(
     private val memeApi: MemeApi,
     private val context: Application
 ) {
+    val errorMessage =Resource.error("Couldnt connect to the server, check your internet connection", null)
     suspend fun login(username: String, password: String) = withContext(Dispatchers.IO) {
         try {
             val response = memeApi.login(AccountRequest(username, password))
@@ -24,7 +27,7 @@ class MemeRepository @Inject constructor(
                 Resource.error(response.body()?.message ?: response.message(), null)
             }
         } catch (e: Exception) {
-            Resource.error("Couldnt connect to the server, check your internet connection", null)
+            errorMessage
         }
     }
 
@@ -37,7 +40,7 @@ class MemeRepository @Inject constructor(
                 Resource.error(response.body()?.message ?: response.message(), null)
             }
         } catch (e: Exception) {
-            Resource.error("Couldnt connect to the server, check your internet connection", null)
+            errorMessage
         }
     }
     suspend fun getUserInfo() = withContext(Dispatchers.IO){
@@ -49,7 +52,7 @@ class MemeRepository @Inject constructor(
                 Resource.error(response.message(),null)
             }
         }catch(e:Exception){
-            Resource.error("Couldnt connect to the server",null)
+            errorMessage
         }
     }
     suspend fun updateUserInfo(user: User) = withContext(Dispatchers.IO){
@@ -61,8 +64,32 @@ class MemeRepository @Inject constructor(
                 Resource.error(response.message(),null)
             }
         }catch (e:Exception){
-            Resource.error("Couldnt save the update profile, please try again", null)
+            errorMessage
         }
+    }
+    suspend fun decreaseScore(username: String, scoreDecrease: Int) = withContext(Dispatchers.IO){
+        try {
+            val response = memeApi.decreaseScore(PointRequest(username,scoreDecrease))
+            if(response.isSuccessful){
+                Resource.success(response.message() ?: "Score used successfully")
+            }else{
+                Resource.error(response.message() ?: "Check your connection",null)
+            }
+        }catch (e:Exception){
+            errorMessage
+        }
+    }
+    suspend fun saveMeme(meme: Meme) = withContext(Dispatchers.IO){
+         try {
+             val response= memeApi.saveMeme(meme)
+             if(response.isSuccessful){
+                 Resource.success(response.message() ?: "Successfully saved")
+             }else{
+                 Resource.error(response.message() ?: "Check your connection",null)
+             }
+         }catch (e: Exception){
+             errorMessage
+         }
     }
 
     suspend fun getAllMemes() = withContext(Dispatchers.IO) {
@@ -75,8 +102,45 @@ class MemeRepository @Inject constructor(
                 Resource.error(response.message(), null)
             }
         }catch (e: Exception) {
-            Resource.error("Couldnt connect to the server, check your internet connection", null)
+            errorMessage
         }
 
+    }
+    suspend fun getAllTrash()= withContext(Dispatchers.IO){
+        try {
+            val response = memeApi.getAllTrash()
+            if(response.isSuccessful){
+                Resource.success(response.body())
+            }else{
+                Resource.error(response.message(),null)
+            }
+        }catch (e: Exception){
+            errorMessage
+        }
+    }
+    suspend fun getLeaderboard()= withContext(Dispatchers.IO){
+        try{
+            val response = memeApi.getLeaderboard()
+            if(response.isSuccessful){
+                Resource.success(response.body())
+            }else{
+                Resource.error(response.message(),null)
+            }
+        }catch (e:Exception){
+            errorMessage
+        }
+    }
+
+    suspend fun getUserPost(username: String)= withContext(Dispatchers.IO){
+        try{
+            val response = memeApi.getUserPost(username)
+            if(response.isSuccessful){
+                Resource.success(response.body())
+            }else{
+                Resource.error(response.message(),null)
+            }
+        }catch (e:Exception){
+            errorMessage
+        }
     }
 }

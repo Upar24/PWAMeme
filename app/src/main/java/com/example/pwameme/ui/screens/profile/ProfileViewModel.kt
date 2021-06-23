@@ -24,7 +24,7 @@ class ProfileViewModel @Inject constructor(
 
     fun getUserInfo(username:String){
         _getUserInfo.postValue(Resource.loading(null))
-        if(username == NO_USERNAME){
+        if(username == NO_USERNAME || username == ""){
             _getUserInfo.postValue(Resource.error("Please Login First",null))
             return
         }

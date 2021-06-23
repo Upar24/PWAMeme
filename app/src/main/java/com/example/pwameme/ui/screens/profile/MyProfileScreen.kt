@@ -37,7 +37,7 @@ fun MyProfileScreen(){
     uiState.value?.let {
         when(it.status){
             Status.SUCCESS ->{
-                UserInfo(true,it.data!!,ProfileVM)
+                UserInfo(true,it.data!!,ProfileVM,AuthVM)
             }
             Status.ERROR -> {
                 Toast.makeText(
@@ -51,25 +51,8 @@ fun MyProfileScreen(){
     }
 }
 @Composable
-fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel){
-    val uiState = profileVM.userInfoUpdate.observeAsState()
-    uiState.value?.let {
-        when(it.status){
-            Status.SUCCESS ->{
-                Toast.makeText(
-                    LocalContext.current, uiState.value?.message ?: "Info successfully updated",
-                    Toast.LENGTH_SHORT).show()
-            }
-            Status.ERROR ->{
-                Toast.makeText(
-                    LocalContext.current, uiState.value?.message ?: "An unknown error occured",
-                    Toast.LENGTH_SHORT).show()
-            }
-            Status.LOADING ->{
-                ProgressBarItem()
-            }
-        }
-    }
+fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel,authVM: AuthViewModel){
+
 
 
 
@@ -137,6 +120,25 @@ fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel){
             }
         }
 
+    }
+    val uiState = profileVM.userInfoUpdate.observeAsState()
+    uiState.value?.let {
+        when(it.status){
+            Status.SUCCESS ->{
+                Toast.makeText(
+                    LocalContext.current, uiState.value?.message ?: "Info successfully updated",
+                    Toast.LENGTH_SHORT).show()
+                authVM.sharedPref.edit().putString("pp",lmaoo).apply()
+            }
+            Status.ERROR ->{
+                Toast.makeText(
+                    LocalContext.current, uiState.value?.message ?: "An unknown error occured",
+                    Toast.LENGTH_SHORT).show()
+            }
+            Status.LOADING ->{
+                ProgressBarItem()
+            }
+        }
     }
 }
  

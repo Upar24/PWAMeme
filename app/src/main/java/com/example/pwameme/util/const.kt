@@ -9,6 +9,8 @@ object Constants{
     const val KEY_LOGGED_IN_PASSWORD = "KEY_LOGGED_IN_PASSWORD"
     const val LOGIN = "Login"
     const val LOGOUT = "Logout"
+    const val TRASH = "trash"
+    const val MEME = "meme"
     const val ENCRYPTED_SHARED_PREF_NAME = "enc_shared_pref"
     const val KEY_AVATAR = "R.drawable.image"
     val IGNORE_AUTH_URLS = listOf("/login","/register","/getAllPosts")

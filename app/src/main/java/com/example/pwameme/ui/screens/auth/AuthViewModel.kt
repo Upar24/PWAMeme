@@ -28,6 +28,7 @@ class AuthViewModel @Inject constructor(
     lateinit var basicAuthInterceptor : BasicAuthInterceptor
     var usernamevm: String? = null
     var passwordvm: String? = null
+    var photouservm: String? = null
     private val _desc=MutableLiveData<String>()
     var desc: LiveData<String> = _desc
     fun getDesc(username:String){

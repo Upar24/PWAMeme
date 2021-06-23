@@ -12,7 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.pwameme.R
+import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.ui.screens.auth.AuthViewModel
+import com.example.pwameme.ui.screens.creatememe.CreateMemeViewModel
 import kotlinx.coroutines.launch
 
 sealed class BottomNavigationScreens(
@@ -80,7 +82,8 @@ fun MainScreenNavigationConfiguration(
     NavHost(navController, startDestination = BottomNavigationScreens.Home.route){
         composable(BottomNavigationScreens.Home.route){
             val authVM = hiltViewModel<AuthViewModel>()
-            HomeScreen()
+            val createVM = hiltViewModel<CreateMemeViewModel>()
+            HomeScreen(authVM,createVM)
         }
         composable(BottomNavigationScreens.Add.route){
             val authVM = hiltViewModel<AuthViewModel>()
