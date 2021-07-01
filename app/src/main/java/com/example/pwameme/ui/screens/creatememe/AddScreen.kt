@@ -63,9 +63,9 @@ fun AddScreen(navController:NavHostController) {
             numberState,
             KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
         )
-        ButtonClickItem(desc = "Random", onClick = {
+        ButtonClickItem(desc = "Generate", onClick = {
             createVM.decreaseScore(username,numberState.text.toInt() * 10)
-            visibleOptionsPost = !visibleOptionsPost
+//            visibleOptionsPost = !visibleOptionsPost
             listkeyword= randomWord(numberState.text.toInt())
         }
         )
@@ -76,15 +76,16 @@ fun AddScreen(navController:NavHostController) {
                 Text(text = "$listkeyword")
                 val textCoin = if(x != 0) {"$c coins already used. What do you want to do with these keywords?"}else{""}
                 Text(text = textCoin)
-                ButtonClickItem(desc = "Trash", onClick =
-                {createVM.saveMeme(Meme(
-                    username,
-                    listkeyword,
-                    TRASH
-                ))
-                    visibleOptionsPost = !visibleOptionsPost}
-                )
-                ButtonClickItem(desc = "Make it", onClick = {visible2= true})
+                Row {
+                    ButtonClickItem(desc = "Trash", onClick = {createVM.saveMeme(Meme(
+                        username,
+                        listkeyword,
+                        TRASH
+                    ))
+                        visibleOptionsPost = !visibleOptionsPost}
+                    )
+                    ButtonClickItem(desc = "Make it", onClick = {visible2= true})
+                }
             }
 
         }
@@ -159,6 +160,7 @@ fun AddScreen(navController:NavHostController) {
                 Toast.makeText(
                     LocalContext.current, result.message ?: "You can start now",
                     Toast.LENGTH_SHORT).show()
+               if(!visibleOptionsPost) visibleOptionsPost = true
             }
             Status.ERROR -> {
                 Toast.makeText(

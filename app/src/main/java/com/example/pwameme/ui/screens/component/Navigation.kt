@@ -155,7 +155,7 @@ fun AppdrawerHeader(closeDrawerAction: () -> Unit
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ImageProfileItem(oom = "R.drawable.image0", username = "Testing",{})
+            ImageProfileItem(oom = "R.drawable.image0", username = "Testing")
             ProfileInfoItem(number = "8", desc = "Coins" )
         }
     }

@@ -1,23 +1,16 @@
 package com.example.pwameme.ui.screens.creatememe
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.repository.MemeRepository
-import com.example.pwameme.util.Constants
 import com.example.pwameme.util.Constants.NO_USERNAME
 import com.example.pwameme.util.Event
 import com.example.pwameme.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,18 +28,36 @@ class CreateMemeViewModel @Inject constructor(
     val trashStatus : LiveData<Event<Resource<List<Meme>>>> = _trashStatus
     private val _leaderList = MutableLiveData<Event<Resource<List<User>>>>()
     val leaderList : LiveData<Event<Resource<List<User>>>> = _leaderList
-    private val _userPost = MutableLiveData<Event<Resource<List<Meme>>>>()
-    val userPost : LiveData<Event<Resource<List<Meme>>>> = _userPost
+    private val _userMeme = MutableLiveData<Event<Resource<List<Meme>>>>()
+    val userMeme : LiveData<Event<Resource<List<Meme>>>> = _userMeme
+    private val _userTrash = MutableLiveData<Event<Resource<List<Meme>>>>()
+    val userTrash : LiveData<Event<Resource<List<Meme>>>> = _userTrash
+    private val _likeStatus = MutableLiveData<Event<Resource<Boolean>>>()
+    val likeStatus : LiveData<Event<Resource<Boolean>>> = _likeStatus
+    private val _saveStatus = MutableLiveData<Event<Resource<Boolean>>>()
+    val saveStatus : LiveData<Event<Resource<Boolean>>> = _saveStatus
 
-    fun getUserPost(username: String){
-        _userPost.postValue(Event(Resource.loading(null)))
+
+    fun getUserMeme(username: String){
+        _userMeme.postValue(Event(Resource.loading(null)))
         if(username == NO_USERNAME || username == ""){
-            _userPost.postValue(Event(Resource.error("Please Login First",null)))
+            _userMeme.postValue(Event(Resource.error("Please Login First",null)))
             return
         }
         viewModelScope.launch {
-            val result= repository.getUserPost(username)
-            _userPost.postValue(Event(result))
+            val result= repository.getUserMemes(username)
+            _userMeme.postValue(Event(result))
+        }
+    }
+    fun getUserTrash(username: String){
+        _userTrash.postValue(Event(Resource.loading(null)))
+        if(username == NO_USERNAME || username == ""){
+            _userTrash.postValue(Event(Resource.error("Please Login First",null)))
+            return
+        }
+        viewModelScope.launch {
+            val result= repository.getUserTrash(username)
+            _userTrash.postValue(Event(result))
         }
     }
 
@@ -84,6 +95,20 @@ class CreateMemeViewModel @Inject constructor(
         viewModelScope.launch {
             val result= repository.decreaseScore(username,decreaseScore)
             _randomStatus.postValue(Event(result))
+        }
+    }
+    fun toggleLike(meme:Meme){
+        _likeStatus.postValue(Event(Resource.loading(null)))
+        viewModelScope.launch {
+            val result = repository.toggleLike(meme)
+            _likeStatus.postValue(Event(result))
+        }
+    }
+    fun toggleSave(meme:Meme){
+        _saveStatus.postValue(Event(Resource.loading(null)))
+        viewModelScope.launch {
+            val result= repository.toggleSave(meme)
+            _saveStatus.postValue(Event(result))
         }
     }
 }

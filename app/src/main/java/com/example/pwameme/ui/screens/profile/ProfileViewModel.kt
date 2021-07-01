@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.repository.MemeRepository
 import com.example.pwameme.util.Constants.NO_USERNAME
+import com.example.pwameme.util.Event
 import com.example.pwameme.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -17,31 +18,31 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val repository: MemeRepository
 ):ViewModel(){
-    private val _getUserInfo = MutableLiveData<Resource<User>>()
-    val getUserInfo : LiveData<Resource<User>> = _getUserInfo
-    private val _userInfoUpdate = MutableLiveData<Resource<String>>()
-    val userInfoUpdate : LiveData<Resource<String>> = _userInfoUpdate
+    private val _getUserInfo = MutableLiveData<Event<Resource<User>>>()
+    val getUserInfo : LiveData<Event<Resource<User>>> = _getUserInfo
+    private val _userInfoUpdate = MutableLiveData<Event<Resource<String>>>()
+    val userInfoUpdate : LiveData<Event<Resource<String>>> = _userInfoUpdate
 
     fun getUserInfo(username:String){
-        _getUserInfo.postValue(Resource.loading(null))
+        _getUserInfo.postValue(Event(Resource.loading(null)))
         if(username == NO_USERNAME || username == ""){
-            _getUserInfo.postValue(Resource.error("Please Login First",null))
+            _getUserInfo.postValue(Event(Resource.error("Please Login First",null)))
             return
         }
         viewModelScope.launch {
             val result= repository.getUserInfo()
-            _getUserInfo.postValue(result)
+            _getUserInfo.postValue(Event(result))
         }
     }
     fun UpdateUser(user: User) {
-        _userInfoUpdate.postValue(Resource.loading(null))
+        _userInfoUpdate.postValue(Event(Resource.loading(null)))
         if(user.password.isEmpty()){
-            _userInfoUpdate.postValue(Resource.error("The password can not be empty",null))
+            _userInfoUpdate.postValue(Event(Resource.error("The password can not be empty",null)))
             return
         }
         viewModelScope.launch {
             val result = repository.updateUserInfo(user)
-            _userInfoUpdate.postValue(result)
+            _userInfoUpdate.postValue(Event(result))
         }
     }
 }

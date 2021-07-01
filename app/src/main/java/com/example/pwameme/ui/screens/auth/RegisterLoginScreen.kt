@@ -27,18 +27,19 @@ fun RegisterScreen(navController: NavHostController, vm: AuthViewModel= viewMode
     val uiState= vm.registerStatus.observeAsState()
     Register(navController,vm)
     uiState.value?.let {
-        when(uiState.value?.status){
+        val result = it.peekContent()
+        when(result.status){
             Status.SUCCESS -> {
-                Toast.makeText(LocalContext.current,uiState.value?.data ?: "successfully registered",
+                Toast.makeText(LocalContext.current,result.data ?: "successfully registered",
                     Toast.LENGTH_SHORT).show()
                 navController.navigate("LoginRoute")
             }
             Status.ERROR -> {
-                Toast.makeText(LocalContext.current, uiState.value?.message ?: "An unknown error occured",
+                Toast.makeText(LocalContext.current, result.message ?: "An unknown error occured",
                     Toast.LENGTH_SHORT).show()
             }
             Status.LOADING -> {
-                ProgressBarItem()
+                ProgressCardToastItem()
             }
         }
     }
@@ -94,9 +95,10 @@ fun LoginScreen(
     val uiState= vm.loginStatus.observeAsState()
     Login(navController,vm)
     uiState.value?.let {
-        when(uiState.value?.status){
+        val result= it.peekContent()
+        when(result.status){
             Status.SUCCESS -> {
-                Toast.makeText(LocalContext.current, uiState.value?.data ?: "successfully logged in",
+                Toast.makeText(LocalContext.current, result.data ?: "successfully logged in",
                     Toast.LENGTH_SHORT).show()
                 vm.sharedPref.edit().putString(KEY_LOGGED_IN_USERNAME,vm.usernamevm).apply()
                 vm.sharedPref.edit().putString(KEY_LOGGED_IN_PASSWORD,vm.passwordvm).apply()
@@ -106,7 +108,7 @@ fun LoginScreen(
                 Timber.d("Called")
             }
             Status.ERROR -> {
-                Toast.makeText(LocalContext.current, uiState.value?.message ?: "An unknown error occured",
+                Toast.makeText(LocalContext.current, result.message ?: "An unknown error occured",
                     Toast.LENGTH_SHORT).show()
             }
             Status.LOADING -> {

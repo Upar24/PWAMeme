@@ -8,11 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.example.pwameme.R
-import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.ui.screens.auth.AuthViewModel
 import com.example.pwameme.ui.screens.creatememe.CreateMemeViewModel
 import kotlinx.coroutines.launch
@@ -83,20 +84,25 @@ fun MainScreenNavigationConfiguration(
         composable(BottomNavigationScreens.Home.route){
             val authVM = hiltViewModel<AuthViewModel>()
             val createVM = hiltViewModel<CreateMemeViewModel>()
-            HomeScreen(authVM,createVM)
+            HomeScreen(navController,authVM,createVM)
         }
         composable(BottomNavigationScreens.Add.route){
-            val authVM = hiltViewModel<AuthViewModel>()
             AddScreen(navController)
         }
         composable(BottomNavigationScreens.Profile.route){
-            ProfileScreen()
+            ProfileScreen(navController)
         }
         composable(BottomNavigationScreens.Search.route){
             SearchScreen()
         }
         composable(BottomNavigationScreens.MyProfile.route){
             MyProfileScreen()
+        }
+        composable("UserProfileScreenRoute/{username}",
+            arguments = listOf(navArgument("username"){type= NavType.StringType
+            defaultValue = ""})
+        ){
+            it.arguments?.getString("username")?.let { it1 -> OtherProfileUsername(navController,it1) }
         }
         composable("LoginRoute"){
             val authVM = hiltViewModel<AuthViewModel>()

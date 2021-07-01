@@ -13,6 +13,7 @@ import com.example.pwameme.util.Constants.LOGIN
 import com.example.pwameme.util.Constants.LOGOUT
 import com.example.pwameme.util.Constants.NO_PASSWORD
 import com.example.pwameme.util.Constants.NO_USERNAME
+import com.example.pwameme.util.Event
 import com.example.pwameme.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -35,37 +36,37 @@ class AuthViewModel @Inject constructor(
         _desc.value = username
     }
 
-    private val _registerStatus = MutableLiveData<Resource<String>>()
-    val registerStatus : LiveData<Resource<String>> = _registerStatus
-    private val _loginStatus = MutableLiveData<Resource<String>>()
-    val loginStatus : LiveData<Resource<String>> = _loginStatus
+    private val _registerStatus = MutableLiveData<Event<Resource<String>>>()
+    val registerStatus : LiveData<Event<Resource<String>>> = _registerStatus
+    private val _loginStatus = MutableLiveData<Event<Resource<String>>>()
+    val loginStatus : LiveData<Event<Resource<String>>> = _loginStatus
 
     fun loginUser(username:String,password:String){
-        _loginStatus.postValue(Resource.loading(null))
+        _loginStatus.postValue(Event(Resource.loading(null)))
         if(username.isEmpty() || password.isEmpty()){
-            _loginStatus.postValue(Resource.error("Please fill out all the fields",null))
+            _loginStatus.postValue(Event(Resource.error("Please fill out all the fields",null)))
             return
         }
         viewModelScope.launch {
             usernamevm=username
             passwordvm=password
             val result= repository.login(username,password)
-            _loginStatus.postValue(result)
+            _loginStatus.postValue(Event(result))
         }
     }
     fun registerUser(username: String,password: String,repeatedPassword:String){
-        _registerStatus.postValue(Resource.loading(null))
+        _registerStatus.postValue(Event(Resource.loading(null)))
         if(username.isEmpty() || password.isEmpty() || repeatedPassword.isEmpty()){
-            _registerStatus.postValue(Resource.error("Please fill out all the fields",null))
+            _registerStatus.postValue(Event(Resource.error("Please fill out all the fields",null)))
             return
         }
         if(password != repeatedPassword){
-            _registerStatus.postValue(Resource.error("The passwords do not match",null))
+            _registerStatus.postValue(Event(Resource.error("The passwords do not match",null)))
             return
         }
         viewModelScope.launch {
             val result= repository.register(username,password)
-            _registerStatus.postValue(result)
+            _registerStatus.postValue(Event(result))
         }
     }
     fun isLoggedIn():Boolean{

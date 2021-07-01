@@ -4,7 +4,7 @@ import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.data.remote.requests.AccountRequest
 import com.example.pwameme.data.remote.requests.PointRequest
-import com.example.pwameme.data.remote.requests.SearchRequest
+import com.example.pwameme.data.remote.requests.UserRequest
 import com.example.pwameme.data.remote.responses.SimpleResponse
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -49,6 +49,23 @@ interface MemeApi {
     @GET("/leaderboard")
     suspend fun getLeaderboard():Response<List<User>>
 
-    @GET("/getuserpost")
-    suspend fun getUserPost(username:String):Response<List<Meme>>
+    @GET("/getusermemes")
+    suspend fun getUserMemes(
+        @Body username : UserRequest
+    ):Response<List<Meme>>
+
+    @GET("/getusertrash")
+    suspend fun getUserTrash(
+        @Body username : UserRequest
+    ):Response<List<Meme>>
+
+    @POST("/togglelike")
+    suspend fun toggleLike(
+        @Body meme:Meme
+    ):Response<Boolean>
+
+    @POST("/togglesave")
+    suspend fun toggleSave(
+        @Body meme:Meme
+    ):Response<Boolean>
 }

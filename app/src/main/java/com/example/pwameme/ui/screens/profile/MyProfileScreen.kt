@@ -35,13 +35,14 @@ fun MyProfileScreen(){
     ProfileVM.getUserInfo(username = username)
     val uiState = ProfileVM.getUserInfo.observeAsState()
     uiState.value?.let {
-        when(it.status){
+        val result = it.peekContent()
+        when(result.status){
             Status.SUCCESS ->{
-                UserInfo(true,it.data!!,ProfileVM,AuthVM)
+                UserInfo(true,result.data!!,ProfileVM,AuthVM)
             }
             Status.ERROR -> {
                 Toast.makeText(
-                    LocalContext.current, uiState.value?.message ?: "An unknown error occured",
+                    LocalContext.current, result.message ?: "An unknown error occured",
                     Toast.LENGTH_SHORT).show()
             }
             Status.LOADING -> {
@@ -53,10 +54,6 @@ fun MyProfileScreen(){
 @Composable
 fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel,authVM: AuthViewModel){
 
-
-
-
-
     var visible1 by remember { mutableStateOf(visible) }
     var visible2 by remember { mutableStateOf(false) }
     val bioState = remember {TextFieldState()}
@@ -65,7 +62,7 @@ fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel,au
     if(visible1){
         Spacer(modifier = Modifier.padding(30.dp))
         Column {
-            ImageProfileItem(lmaoo,user.username,{})
+            ImageProfileItem(lmaoo,user.username)
             Text(user.username)
             ProfileInfoItem(number = user.followers.size.toString(), desc = "followers")
             ProfileInfoItem(number = user.following.size.toString(), desc = "following")
@@ -76,13 +73,13 @@ fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel,au
         }
     }else{
         Column {
-            ImageProfileItem(oom = lmaoo, username =user.username,{})
+            ImageProfileItem(oom = lmaoo, username =user.username)
             Text(text = "Change Picture",modifier = Modifier.clickable{visible2 = true})
             Text("Change Bio")
             TextFieldOutlined(desc = "Bio",bioState)
             Text("Change Password")
             TextFieldOutlined(desc = "New Password",passwordState)
-            val user= User(
+            val userInfo= User(
                 username = user.username,
                 password = passwordState.text,
                 following = user.following,
@@ -92,7 +89,7 @@ fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel,au
                 score = user.score,
                 _id = user._id)
             ButtonClickItem(desc = "save", onClick = {
-                profileVM.UpdateUser(user)
+                profileVM.UpdateUser(userInfo)
             })
         }
     }
@@ -123,16 +120,17 @@ fun UserInfo(visible : Boolean = false, user: User,profileVM:ProfileViewModel,au
     }
     val uiState = profileVM.userInfoUpdate.observeAsState()
     uiState.value?.let {
-        when(it.status){
+        val result = it.peekContent()
+        when(result.status){
             Status.SUCCESS ->{
                 Toast.makeText(
-                    LocalContext.current, uiState.value?.message ?: "Info successfully updated",
+                    LocalContext.current, result.message ?: "Info successfully updated",
                     Toast.LENGTH_SHORT).show()
                 authVM.sharedPref.edit().putString("pp",lmaoo).apply()
             }
             Status.ERROR ->{
                 Toast.makeText(
-                    LocalContext.current, uiState.value?.message ?: "An unknown error occured",
+                    LocalContext.current, result.message ?: "An unknown error occured",
                     Toast.LENGTH_SHORT).show()
             }
             Status.LOADING ->{

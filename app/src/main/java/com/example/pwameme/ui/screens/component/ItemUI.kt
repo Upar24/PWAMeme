@@ -1,15 +1,20 @@
 package com.example.pwameme.ui.screens.component
 
-import android.widget.ProgressBar
+import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -18,62 +23,65 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.pwameme.R
 import com.example.pwameme.data.local.entities.Meme
-import com.example.pwameme.ui.screens.ProfileScreen
 
 class TextFieldState{
     var text : String by mutableStateOf("")
 }
 @Composable
-fun MemeHeader(meme: Meme){
-    var profile by remember { mutableStateOf(false) }
-    var username by remember {mutableStateOf("")}
-    if(profile){
-        ProfileScreen(username)
-    }
-    Column {
-        Row(
-            Modifier
-                .padding(4.dp)
-                .fillMaxSize(),Arrangement.SpaceBetween){
-            Column{
-                Text(meme.usernameAuthor,Modifier.clickable { profile= true
-                    username = meme.usernameAuthor })
-                Text("Meme's Author")
-            }
-            Column {
-                Text(meme.usernameKeyword,Modifier.clickable { profile= true
-                    username = meme.usernameKeyword
-                })
-                Text("Keyword's Author")
-            }
-        }
-    }
-}
-@Composable
 fun MemeBody(meme:Meme){
-    Column(Modifier.fillMaxSize(),Arrangement.Center,Alignment.CenterHorizontally) {
-        Text(meme.keyword.toString())
-        Text(meme.descMeme)
+    Column(Modifier.padding(7.dp).fillMaxSize(),Arrangement.Center,Alignment.CenterHorizontally) {
+        Text(meme.keyword.toString(),Modifier.background(Brush.verticalGradient(colors = listOf(
+            Color.Green,Color.Yellow)),shape= CircleShape).padding(10.dp),fontSize = 18.sp)
+        meme.descMeme?.let {
+            Text(
+                it,
+                Modifier.background(Brush.verticalGradient(colors= listOf(Color.Yellow, Color.Yellow)),shape= CircleShape).padding(12.dp),fontSize = 18.sp)
+        }
         if(meme.imageMeme != null || meme.imageMeme != ""){
             val imageMeme = meme.imageMeme?.let { x(it) }
             val image = imageMeme?.let { painterResource(id = it) }
             if (image != null) {
-                Image(painter = image, contentDescription = meme.imageMeme)
+                Image(painter = image, contentDescription = meme.imageMeme,Modifier.padding(start=5.dp).size(200.dp))
             }
         }
     }
 }
-@Preview
 @Composable
-fun y (){
-    MemeHeader(Meme(
-        "Upar", listOf("lmao","lal","live","wins"),
-        "meme","Fina","R.drawable.meme4","lol will lol live wins as always",
-        listOf("fina","upar","random"),listOf("haters"), listOf(), listOf(),4,false,true,true,"lamoooooo"
-    ))
+fun MemeHeader(meme: Meme,navController: NavHostController){
+        Column(Modifier.padding(12.dp)) {
+            Row(
+                Modifier
+                    .padding(4.dp).fillMaxWidth(),
+                Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(meme.usernameAuthor,
+                        Modifier.clickable{navController.navigate("UserProfileScreenRoute/${meme.usernameAuthor}")},
+                        fontSize= 20.sp
+                    )
+                    Text("Meme's Author")
+                }
+                Column {
+                    Text(meme.usernameKeyword,
+                        Modifier.clickable{navController.navigate("UserProfileScreenRoute/${meme.usernameKeyword}")},
+                        fontSize= 20.sp)
+                    Text("Keyword's Author")
+                }
+            }
+        }
 }
+//@Preview
+//@Composable
+//fun y (){
+//    MemeHeader(Meme(
+//        "Upar", listOf("lmao","lal","live","wins"),
+//        "meme","Fina","R.drawable.meme4","lol will lol live wins as alwayslol will lol live wins as alwayslol will lol live wins as always",
+//        listOf("fina","upar","random"),listOf("haters"), listOf(), listOf(),4,false,true,true,"lamoooooo"
+//    ),navController = NavHostController(Context))
+//}
 @Composable
 fun DividerItem(){
     Divider(
@@ -241,7 +249,7 @@ fun AlertDialogItem(title:String,text:String,onClick: () -> Unit){
     )
 }
 @Composable
-fun ImageProfileItem(oom:String,username:String,onClick: () -> Unit){
+fun ImageProfileItem(oom:String,username:String){
     val x = x(oom)
     val lam = painterResource(x)
     Column(horizontalAlignment = Alignment.CenterHorizontally){
@@ -260,11 +268,10 @@ fun ImageProfileItem(oom:String,username:String,onClick: () -> Unit){
     }
 }
 @Composable
-fun ImageListItem(oom: String, onClick: () -> Unit) {
+fun ImageListItem(oom: String ) {
     val x = x(oom)
     val lam = painterResource(x)
     Image(lam,contentDescription = null,modifier = Modifier
-        .clickable { onClick }
         .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
         .size(80.dp),
         contentScale = ContentScale.Fit,

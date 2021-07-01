@@ -7,6 +7,7 @@ import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.data.remote.MemeApi
 import com.example.pwameme.data.remote.requests.AccountRequest
 import com.example.pwameme.data.remote.requests.PointRequest
+import com.example.pwameme.data.remote.requests.UserRequest
 import com.example.pwameme.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -131,15 +132,52 @@ class MemeRepository @Inject constructor(
         }
     }
 
-    suspend fun getUserPost(username: String)= withContext(Dispatchers.IO){
+    suspend fun getUserMemes(username: String)= withContext(Dispatchers.IO){
         try{
-            val response = memeApi.getUserPost(username)
+            val response = memeApi.getUserMemes(UserRequest(username))
             if(response.isSuccessful){
                 Resource.success(response.body())
             }else{
                 Resource.error(response.message(),null)
             }
         }catch (e:Exception){
+            errorMessage
+        }
+    }
+
+    suspend fun getUserTrash(username: String)= withContext(Dispatchers.IO){
+        try{
+            val response = memeApi.getUserTrash(UserRequest(username))
+            if(response.isSuccessful){
+                Resource.success(response.body())
+            }else{
+                Resource.error(response.message(),null)
+            }
+        }catch (e:Exception){
+            errorMessage
+        }
+    }
+    suspend fun toggleLike(meme:Meme)= withContext(Dispatchers.IO){
+        try {
+            val response = memeApi.toggleLike(meme)
+            if(response.isSuccessful){
+                Resource.success(response.body())
+            }else{
+                Resource.error(response.message() ,null)
+            }
+        }catch (e: Exception){
+            errorMessage
+        }
+    }
+    suspend fun toggleSave(meme:Meme)= withContext(Dispatchers.IO){
+        try {
+            val response = memeApi.toggleSave(meme)
+            if(response.isSuccessful){
+                Resource.success(response.body())
+            }else{
+                Resource.error(response.message() ?: "Check your connection",null)
+            }
+        }catch (e: Exception){
             errorMessage
         }
     }

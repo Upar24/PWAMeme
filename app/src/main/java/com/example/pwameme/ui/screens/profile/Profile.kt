@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.pwameme.R
 import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.data.local.entities.User
@@ -29,148 +30,165 @@ import com.example.pwameme.ui.screens.auth.AuthViewModel
 import com.example.pwameme.ui.screens.component.*
 import com.example.pwameme.ui.screens.creatememe.CreateMemeViewModel
 import com.example.pwameme.ui.screens.profile.ProfileViewModel
+import com.example.pwameme.util.Constants
+import com.example.pwameme.util.Constants.KEY_LOGGED_IN_USERNAME
+import com.example.pwameme.util.Constants.NO_USERNAME
 import com.example.pwameme.util.Status
 
 @Composable
-fun ProfileScreen(username:String) {
+fun ProfileScreen(navController: NavHostController) {
     val profileVM = hiltViewModel<ProfileViewModel>()
     val createVM = hiltViewModel<CreateMemeViewModel>()
+    val authVM = hiltViewModel<AuthViewModel>()
     val uiState= profileVM.getUserInfo.observeAsState()
-    ButtonClickItem(desc = "Click To see",onClick ={profileVM.getUserInfo(username)
-        createVM.getUserPost(username)
-    } )
-
-    uiState.value?.let {
-        when(uiState.value?.status){
-            Status.SUCCESS -> {
-                UserScreen(uiState.value?.data)
-            }
-            Status.LOADING -> {
-                ProgressCardToastItem()
-            }
-            Status.ERROR -> {
-                Toast.makeText(
-                    LocalContext.current, uiState.value?.message ?: "An unknown error occured",
-                    Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    val postUserState= createVM.userPost.observeAsState()
-
-    postUserState.value?.let {
-        val result= it.peekContent()
-        when(result.status){
-            Status.SUCCESS -> {
-                UserPostList(result.data)
-            }
-            Status.ERROR -> {
-                Toast.makeText(
-                    LocalContext.current, uiState.value?.message ?: "An unknown error occured",
-                    Toast.LENGTH_SHORT).show()
-            }
-            Status.LOADING -> {
-                ProgressCardToastItem()
-            }
-        }
-    }
+    val username=authVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME
+    ) ?: NO_USERNAME
     Column {
-        var lmaoo by remember { mutableStateOf("R.drawable.image0") }
-        var visible2 by remember { mutableStateOf(false) }
-        Text(text = "Profile Screen")
-        ImageProfileItem(
-            oom = lmaoo,
-            username = "Fina",
-            onClick = {}
-        )
-        Text(text = "Change Picture", modifier = Modifier.clickable { visible2 = !visible2 })
-        if (visible2) {
-            val listPic = listOf(
-                "R.drawable.image0",
-                "R.drawable.image1",
-                "R.drawable.image2",
-                "R.drawable.image3",
-                "R.drawable.image4",
-                "R.drawable.image5",
-                "R.drawable.image6"
-            )
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                for (i in 0..listPic.size - 1) {
-                    val y = x(listPic[i])
-                    val v = painterResource(id = y)
-                    Image(v, contentDescription = "photo profile", modifier = Modifier
-                        .clickable {
-                            visible2 = !visible2
-                            lmaoo = listPic[i]
-                        }
-                        .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
-                        .size(80.dp),
-                        contentScale = ContentScale.Fit,
-                        alignment = Alignment.Center)
+        ButtonClickItem(desc = "Click To see",onClick ={profileVM.getUserInfo(username)
+            createVM.getUserMeme(username)
+        } )
+        var memeList= listOf<Meme>()
+        var trashList= listOf<Meme>()
+        var visiblefunction by remember { mutableStateOf("")}
+        uiState.value?.let {
+            val result = it.peekContent()
+            when(result.status){
+                Status.SUCCESS -> {
+                    UserScreen(result.data)
+                }
+                Status.LOADING -> {
+                    ProgressCardToastItem()
+                }
+                Status.ERROR -> {
+                    Toast.makeText(
+                        LocalContext.current, result.message ?: "An unknown error occured",
+                        Toast.LENGTH_SHORT).show()
                 }
             }
-
         }
-        Text(text = lmaoo)
-
+        val memeUserState= createVM.userMeme.observeAsState()
+        memeUserState.value?.let {
+            val result= it.peekContent()
+            when(result.status){
+                Status.SUCCESS -> {
+                    memeList = result.data ?: return@let
+                }
+                Status.ERROR -> {
+                    Toast.makeText(
+                        LocalContext.current, result.message ?: "An unknown error occured",
+                        Toast.LENGTH_SHORT).show()
+                }
+                Status.LOADING -> {
+                    ProgressCardToastItem()
+                }
+            }
+        }
+        val trashUserState= createVM.userTrash.observeAsState()
+        trashUserState.value?.let {
+            val result= it.peekContent()
+            when(result.status){
+                Status.SUCCESS -> {
+                    trashList= result.data ?: return@let
+                }
+                Status.ERROR -> {
+                    Toast.makeText(
+                        LocalContext.current, result.message ?: "An unknown error occured",
+                        Toast.LENGTH_SHORT).show()
+                }
+                Status.LOADING -> {
+                    ProgressCardToastItem()
+                }
+            }
+        }
+        ButtonClickItem(desc = "Load all $username meme",onClick = { createVM.getUserMeme(username)
+            visiblefunction = "meme"})
+        ButtonClickItem(desc = "Load all $username trash",onClick = { createVM.getUserTrash(username)
+            visiblefunction = "trash"
+        })
+        ButtonClickItem(desc = username,onClick = {})
+        if(visiblefunction == "meme")MemeList(meme = memeList,navController)
+        if(visiblefunction == "trash") TrashList(meme = trashList, navController)
     }
 }
 @Composable
+fun OtherProfileUsername(navController: NavHostController, username: String){
+    val profileVM = hiltViewModel<ProfileViewModel>()
+    val createVM = hiltViewModel<CreateMemeViewModel>()
+    val uiState= profileVM.getUserInfo.observeAsState()
+
+        Column {
+            var memeList= listOf<Meme>()
+            var trashList= listOf<Meme>()
+            var visiblefunction by remember { mutableStateOf("")}
+            uiState.value?.let {
+                val result = it.peekContent()
+                when(result.status){
+                    Status.SUCCESS -> {
+                        UserScreen(result.data)
+                    }
+                    Status.LOADING -> {
+                        ProgressCardToastItem()
+                    }
+                    Status.ERROR -> {
+                        Toast.makeText(
+                            LocalContext.current, result.message ?: "An unknown error occured",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            val memeUserState= createVM.userMeme.observeAsState()
+            memeUserState.value?.let {
+                val result= it.peekContent()
+                when(result.status){
+                    Status.SUCCESS -> {
+                        memeList = result.data ?: return@let
+                    }
+                    Status.ERROR -> {
+                        Toast.makeText(
+                            LocalContext.current, result.message ?: "An unknown error occured",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                    Status.LOADING -> {
+                        ProgressCardToastItem()
+                    }
+                }
+            }
+            val trashUserState= createVM.userTrash.observeAsState()
+            trashUserState.value?.let {
+                val result= it.peekContent()
+                when(result.status){
+                    Status.SUCCESS -> {
+                        trashList= result.data ?: return@let
+                    }
+                    Status.ERROR -> {
+                        Toast.makeText(
+                            LocalContext.current, result.message ?: "An unknown error occured",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                    Status.LOADING -> {
+                        ProgressCardToastItem()
+                    }
+                }
+            }
+            ButtonClickItem(desc = "Click To see",onClick ={profileVM.getUserInfo(username)})
+            ButtonClickItem(desc = "Load all $username meme",onClick = { createVM.getUserMeme(username)
+                visiblefunction = "meme"})
+            ButtonClickItem(desc = "Load all $username trash",onClick = { createVM.getUserTrash(username)
+                visiblefunction = "trash"
+            })
+            ButtonClickItem(desc = username,onClick = {})
+
+            if(visiblefunction == "meme")MemeList(meme = memeList,navController)
+            if(visiblefunction == "trash") TrashList(meme = trashList, navController)
+        }
+    }
+
+@Composable
 fun UserScreen(user: User?){
     user?.let {
-        Row {
-            ImageProfileItem(oom = user.image, username = user.username,onClick ={})
+        Row (Modifier.fillMaxWidth(),Arrangement.SpaceAround){
+            ImageProfileItem(oom = user.image, username = user.username)
             ProfileInfoItem(number = user.score.toString(), desc = "Score")
         }
     }
 }
-@Composable
-fun UserPostList(post: List<Meme>?){
-    post?.forEach {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(10.dp),
-            shape = RoundedCornerShape(8.dp),
-            backgroundColor = MaterialTheme.colors.secondary
-        ) {
-            if (it.type == "meme") {
-                Column {
-                    var like by remember { mutableStateOf(it.liking) }
-                    var unlike by remember { mutableStateOf(it.unliking) }
-                    var save by remember { mutableStateOf(it.saving) }
-                    MemeHeader(meme =it)
-                    DividerItem()
-                    MemeBody(meme = it)
-                    DividerItem()
-                    Row(
-                        Modifier
-                            .padding(4.dp)
-                            .fillMaxSize(),Arrangement.SpaceBetween){
-                        if(like){
-                            Text("liked".plus(it.liked.size.toString()),color = Color.Blue)
-                        }else{
-                            Text("Like".plus(it.liked.size.toString()))
-                        }
-                        if(unlike){
-                            Text("Unkliked".plus(it.unliked.size.toString()),color = Color.Red)
-                        }else{
-                            Text("Unlike".plus(it.liked.size.toString()))
-                        }
-                        if(save){
-                            Text("Saved".plus(it.saved.size.toString()),color = Color.Yellow)
-                        }else{
-                            Text("Save".plus(it.saved.size.toString()))
-                        }
-                    }
-                }
-            }else{
-                MemeHeader(meme =it)
-                DividerItem()
-                MemeBody(meme = it)
-                DividerItem()
-            }
-        }
-    }
-}
-
-
