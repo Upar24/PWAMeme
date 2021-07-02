@@ -3,7 +3,10 @@ package com.example.pwameme.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +32,7 @@ import com.example.pwameme.util.Constants.TRASH
 import com.example.pwameme.util.Status
 
 @Composable
-fun AddScreen(navController:NavHostController) {
+fun AddScreen(navController:NavHostController){
     val createVM = hiltViewModel<CreateMemeViewModel>()
     val AuthVM = hiltViewModel<AuthViewModel>()
     if(AuthVM.isLoggedIn()){
@@ -37,13 +40,13 @@ fun AddScreen(navController:NavHostController) {
     }
     val username = AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) ?: NO_USERNAME
     if (username == NO_USERNAME){
-        AlertDialogItem(title = "Please Login", text = "You need to login first to add Meme. Do you want to Login?",
+        AlertDialogItem(title = "PLEASE LOGIN", text = "You need to login first to add Meme. Do you want to Login?",
         onClick = { navController.navigate("LoginRoute") })
     }
-    val numberState = remember { TextFieldState() }
+    val numberState = remember { TextFieldState("0") }
     var visibleOptionsPost by remember { mutableStateOf(false) }
-    var visible2 by remember { mutableStateOf(false)}
-    var visible3 by remember { mutableStateOf(false)}
+    var visibleMake by remember { mutableStateOf(false)}
+    var visiblePic by remember { mutableStateOf(false)}
     var memePic by remember { mutableStateOf("") }
     val resultState = remember {TextFieldState()}
     var listkeyword by remember { mutableStateOf(mutableListOf(""))}
@@ -53,11 +56,11 @@ fun AddScreen(navController:NavHostController) {
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 100.dp),
+            .padding(10.dp, bottom = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "AddScreen Screen $username")
-        Text(text = "Input how many words you want to take:")
+        Text(text = "Input how many words you want to take:",style = MaterialTheme.typography.subtitle1)
+        Spacer(modifier = Modifier.padding(8.dp))
         TextFieldItem(
             modifier = Modifier.fillMaxWidth(0.2f),
             numberState,
@@ -65,50 +68,56 @@ fun AddScreen(navController:NavHostController) {
         )
         ButtonClickItem(desc = "Generate", onClick = {
             createVM.decreaseScore(username,numberState.text.toInt() * 10)
-//            visibleOptionsPost = !visibleOptionsPost
             listkeyword= randomWord(numberState.text.toInt())
-        }
-        )
+        })
+        Spacer(modifier = Modifier.padding(5.dp))
         if (visibleOptionsPost) {
             val x = numberState.text.toInt()
             val c = x * 10
             Column {
                 Text(text = "$listkeyword")
                 val textCoin = if(x != 0) {"$c coins already used. What do you want to do with these keywords?"}else{""}
-                Text(text = textCoin)
-                Row {
-                    ButtonClickItem(desc = "Trash", onClick = {createVM.saveMeme(Meme(
+                Text(text = textCoin,style = MaterialTheme.typography.body2)
+                Spacer(modifier = Modifier.padding(5.dp))
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly) {
+                    ButtonClickItem(desc = "Trash", onClick = {createVM.saveMeme(username,Meme(
                         username,
                         listkeyword,
                         TRASH
                     ))
-                        visibleOptionsPost = !visibleOptionsPost}
+                        visibleOptionsPost = false}
                     )
-                    ButtonClickItem(desc = "Make it", onClick = {visible2= true})
+                    ButtonClickItem(desc = "Make it", onClick = {visibleMake= true})
                 }
+                Spacer(modifier = Modifier.padding(5.dp))
             }
 
         }
 
 
-        if(visible2){
-            Text(text="Click to use pictures",modifier = Modifier.clickable { visible3 = !visible3 })
+        if(visibleMake){
+            Text(text="Click to use pictures",
+                modifier = Modifier.clickable { visiblePic = !visiblePic },
+                style = MaterialTheme.typography.body2
+            )
             TextFieldOutlined(desc = "Result",resultState)
             if(memePic != ""){
                 val y = x(memePic)
-                val v = painterResource(id = y)
-                Image(v,contentDescription = "meme pic",modifier= Modifier.size(120.dp))
+                val v = y?.let { painterResource(id = it) }
+                v?.let { Image(it,contentDescription = "meme pic",modifier= Modifier.size(120.dp)) }
             }
-            ButtonClickItem(desc ="Save",onClick = {createVM.saveMeme(Meme(
+            ButtonClickItem(desc ="Save", onClick = {createVM.saveMeme(username,Meme(
                 username,
                 listkeyword,
                 MEME,
                 username,
                 memePic,
                 resultState.text
-            ))})
+            ))
+            visibleMake= false})
 
-            if(visible3){
+            if(visiblePic){
 
                 val listPicMeme = listOf(
                     "R.drawable.meme0",
@@ -133,19 +142,27 @@ fun AddScreen(navController:NavHostController) {
                     "R.drawable.meme19",
                     "R.drawable.meme20",
                 )
-                Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                    for (i in 0..listPicMeme.size - 1) {
-                        val y = x(listPicMeme[i])
-                        val v = painterResource(id = y)
-                        Image(v, contentDescription = "photo meme", modifier = Modifier
-                            .clickable {
-                                visible3 = !visible3
-                                memePic = listPicMeme[i]
-                            }
-                            .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
-                            .size(80.dp),
-                            contentScale = ContentScale.Fit,
-                            alignment = Alignment.Center)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(1f)
+                        .padding(10.dp),
+                    shape= RoundedCornerShape(8.dp),
+                    backgroundColor = MaterialTheme.colors.primaryVariant
+                ){
+                    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                        for (i in 0..listPicMeme.size - 1) {
+                            val y = x(listPicMeme[i])!!
+                            val v = painterResource(id = y)
+                            Image(v, contentDescription = "photo meme", modifier = Modifier
+                                .clickable {
+                                    visiblePic = !visiblePic
+                                    memePic = listPicMeme[i]
+                                }
+                                .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
+                                .size(80.dp),
+                                contentScale = ContentScale.Fit,
+                                alignment = Alignment.Center)
+                        }
                     }
                 }
             }
@@ -180,6 +197,7 @@ fun AddScreen(navController:NavHostController) {
                 Toast.makeText(
                     LocalContext.current, result.message ?: "Transaction successfully done",
                     Toast.LENGTH_SHORT).show()
+                navController.navigate("Home")
             }
             Status.ERROR -> {
                 Toast.makeText(

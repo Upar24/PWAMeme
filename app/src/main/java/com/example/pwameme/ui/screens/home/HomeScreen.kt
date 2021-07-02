@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -23,19 +24,15 @@ import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.ui.screens.auth.AuthViewModel
 import com.example.pwameme.ui.screens.component.*
 import com.example.pwameme.ui.screens.creatememe.CreateMemeViewModel
-import com.example.pwameme.util.Constants
 import com.example.pwameme.util.Constants.KEY_LOGGED_IN_USERNAME
 import com.example.pwameme.util.Constants.MEME
 import com.example.pwameme.util.Constants.NO_USERNAME
-import com.example.pwameme.util.Constants.TRASH
 import com.example.pwameme.util.Status
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,AuthVM: AuthViewModel= viewModel(),createVM:CreateMemeViewModel= viewModel()){
-        Text("Home Screen Hmm LOL${AuthVM.passwordvm} ${AuthVM.usernamevm} " +
-                (AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) ?: NO_USERNAME)
-        )
+
     val username=AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) ?: NO_USERNAME
 
     if(AuthVM.isLoggedIn()){
@@ -88,30 +85,32 @@ fun HomeScreen(
             Status.SUCCESS -> {
                 leaderList= result.data ?: return@let
             }
-            Status.LOADING -> {
+            Status.ERROR -> {
                 Toast.makeText(
                     LocalContext.current, result.message ?: "An unknown error occured",
                     Toast.LENGTH_SHORT).show()
             }
-            Status.ERROR -> {
+            Status.LOADING -> {
                 ProgressCardToastItem()
             }
         }
     }
-    Column {
-        Row {
-            ButtonClickItem(desc = "Load Memes",onClick = {createVM.loadAllMemes()
+    Column (Modifier.padding(top=3.dp,bottom = 100.dp)){
+        Row (Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly){
+            ButtonClickItem(
+                desc = "All Memes", onClick = {createVM.loadAllMemes()
                 visiblefunction = "meme"
-            }
+            }, style = if(visiblefunction == "meme") MaterialTheme.typography.body1 else MaterialTheme.typography.button
             )
-            ButtonClickItem(desc = "Load Trash",onClick = {createVM.loadAllTrash()
+            ButtonClickItem(desc = "All Trash", onClick = {createVM.loadAllTrash()
                 visiblefunction = "trash"
-            })
-            ButtonClickItem(desc = "Leaderboard",onClick = {createVM.loadLeader()
+            }, style = if(visiblefunction == "trash") MaterialTheme.typography.body1 else MaterialTheme.typography.button)
+            ButtonClickItem(desc = "Leaderboard", onClick = {createVM.loadLeader()
                 visiblefunction = "leader"
-            })
+            }, style = if(visiblefunction == "leader") MaterialTheme.typography.body1 else MaterialTheme.typography.button)
         }
-        if(visiblefunction == "meme")MemeList(meme = memeList,navController)
+        if(visiblefunction == "meme")MemeList(username,memeList,navController)
         if(visiblefunction == "trash") TrashList(meme = trashList, navController)
         if(visiblefunction == "leader") LeaderBoardList(user = leaderList,navController)
     }
@@ -119,7 +118,7 @@ fun HomeScreen(
 
 }
 @Composable
-fun MemeList(meme: List<Meme>?,navController: NavHostController) {
+fun MemeList(username:String,meme: List<Meme>?,navController: NavHostController) {
     val createVM = hiltViewModel<CreateMemeViewModel>()
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -146,15 +145,17 @@ fun MemeList(meme: List<Meme>?,navController: NavHostController) {
                     ) {
 
 
-                        var like by remember { mutableStateOf(meme.liking) }
-//            var unlike by remember { mutableStateOf(it.unliking) }
-                        var save by remember { mutableStateOf(meme.saving) }
+                        var like by remember { mutableStateOf(if(username in meme.liked)true else false) }
+                        var save by remember { mutableStateOf(if(username in meme.saved) true else false) }
+                        var countLiked by remember{ mutableStateOf(meme.liked.size)}
+                        var countSaved by remember { mutableStateOf(meme.saved.size)}
                         var likeState= createVM.likeStatus.observeAsState()
                         likeState.value?.let {
                             val result = it.peekContent()
                             when (result.status){
                                 Status.SUCCESS -> {
-                                    like= result.data!!
+                                    like= result.data?.successful!!
+                                    countLiked= result.data?.message.toInt()
                                     Toast.makeText(LocalContext.current,  "Successfully",
                                         Toast.LENGTH_SHORT).show()
                                 }
@@ -172,7 +173,8 @@ fun MemeList(meme: List<Meme>?,navController: NavHostController) {
                             val result = it.peekContent()
                             when (result.status){
                                 Status.SUCCESS -> {
-                                    save = result.data!!
+                                    save = result.data?.successful!!
+                                    countSaved=result.data?.message!!.toInt()
                                     Toast.makeText(LocalContext.current,  "Successfully",
                                         Toast.LENGTH_SHORT).show()
                                 }
@@ -186,14 +188,15 @@ fun MemeList(meme: List<Meme>?,navController: NavHostController) {
                             }
                         }
                         if (like) {
-                            ButtonClickItem(desc = "Liked".plus((meme.liked.size ).toString()),onClick={createVM.toggleLike(meme)})
+                            Text("Liked  $countLiked",Modifier.clickable { createVM.toggleLike(username,meme)},Color.Blue)
                         } else {
-                            ButtonClickItem(desc = "Like".plus((meme.liked.size).toString()),onClick= {createVM.toggleLike(meme)})
+                            Text("Like $countLiked",Modifier.clickable { createVM.toggleLike(username,meme)})
                         }
                         if (save) {
-                            ButtonClickItem(desc = "Saved".plus((meme.saved.size).toString()),onClick = {createVM.toggleSave(meme)})
+
+                            Text("Saved $countSaved",Modifier.clickable { createVM.toggleSave(username,meme)},Color.Yellow)
                         } else {
-                            ButtonClickItem(desc = "Save".plus((meme.saved.size).toString()),onClick = {createVM.toggleSave(meme)})
+                            Text("Save $countSaved",Modifier.clickable { createVM.toggleSave(username,meme)})
                         }
                     }
                 }
@@ -228,16 +231,16 @@ fun TrashList(meme: List<Meme>?,navController: NavHostController,createVM:Create
                     DividerItem()
                     MemeBody(meme = trash)
                     DividerItem()
-                    ButtonClickItem(desc = "Take it",onClick ={makeMemeVisible = true})
+                    ButtonClickItem(desc = "Take it", onClick ={makeMemeVisible = true})
                     if(makeMemeVisible == true){
                         Text(text="Click to use pictures",modifier = Modifier.clickable { imageVisible = !imageVisible })
                         TextFieldOutlined(desc = "Result",resultState)
                         if(memePic != ""){
                             val y = x(memePic)
-                            val v = painterResource(id = y)
-                            Image(v,contentDescription = "meme pic",modifier= Modifier.size(120.dp))
+                            val v = y?.let { painterResource(id = it) }
+                            v?.let { Image(it,contentDescription = "meme pic",modifier= Modifier.size(120.dp)) }
                         }
-                        ButtonClickItem(desc ="Save",onClick = {createVM.saveMeme(Meme(
+                        ButtonClickItem(desc ="Save", onClick = {createVM.saveMeme(username,Meme(
                             trash.usernameKeyword,
                             trash.keyword,
                             MEME,
@@ -275,16 +278,18 @@ fun TrashList(meme: List<Meme>?,navController: NavHostController,createVM:Create
                             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
                                 for (i in 0..listPicMeme.size - 1) {
                                     val y = x(listPicMeme[i])
-                                    val v = painterResource(id = y)
-                                    Image(v, contentDescription = "photo meme", modifier = Modifier
-                                        .clickable {
-                                            imageVisible = !imageVisible
-                                            memePic = listPicMeme[i]
-                                        }
-                                        .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
-                                        .size(80.dp),
-                                        contentScale = ContentScale.Fit,
-                                        alignment = Alignment.Center)
+                                    val v = y?.let { painterResource(id = it) }
+                                    v?.let {
+                                        Image(it, contentDescription = "photo meme", modifier = Modifier
+                                            .clickable {
+                                                imageVisible = !imageVisible
+                                                memePic = listPicMeme[i]
+                                            }
+                                            .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
+                                            .size(80.dp),
+                                            contentScale = ContentScale.Fit,
+                                            alignment = Alignment.Center)
+                                    }
                                 }
                             }
                         }
@@ -302,19 +307,32 @@ fun LeaderBoardList(user: List<User>?,navController: NavHostController){
         Alignment.CenterHorizontally
     ){
         user?.forEach {
-            Row(){
-                Row {
-                    val a = x(it.image)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(1f)
+                    .padding(10.dp),
+                shape= RoundedCornerShape(8.dp),
+                backgroundColor = MaterialTheme.colors.primaryVariant
+            ){
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    Arrangement.SpaceBetween,
+                    Alignment.CenterVertically
+                ){
+                    val a = x(it.image)!!
                     val b = painterResource(id = a)
                     Image(b,contentDescription = "leader photo",
                         Modifier
                             .padding(start = 14.dp, top = 4.dp, bottom = 4.dp)
                             .size(80.dp),
-                        contentScale = ContentScale.Fit,
-                        alignment = Alignment.Center)
-                    Text(it.username,Modifier.clickable {navController.navigate("UserProfileScreenRoute/${it.username}")})
+                            contentScale = ContentScale.Fit,
+                            alignment = Alignment.Center)
+
+                    Text(it.username,Modifier.clickable {navController.navigate("UserProfileScreenRoute/${it.username}")},style = MaterialTheme.typography.body2,)
+                    Text(it.score.toString(),style = MaterialTheme.typography.subtitle1)
                 }
-                Text(it.score.toString())
             }
         }
     }

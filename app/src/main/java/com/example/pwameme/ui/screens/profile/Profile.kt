@@ -1,13 +1,9 @@
 package com.example.pwameme.ui.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.mutableStateOf
@@ -15,22 +11,16 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.pwameme.R
 import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.data.local.entities.User
 import com.example.pwameme.ui.screens.auth.AuthViewModel
 import com.example.pwameme.ui.screens.component.*
 import com.example.pwameme.ui.screens.creatememe.CreateMemeViewModel
 import com.example.pwameme.ui.screens.profile.ProfileViewModel
-import com.example.pwameme.util.Constants
 import com.example.pwameme.util.Constants.KEY_LOGGED_IN_USERNAME
 import com.example.pwameme.util.Constants.NO_USERNAME
 import com.example.pwameme.util.Status
@@ -43,9 +33,12 @@ fun ProfileScreen(navController: NavHostController) {
     val uiState= profileVM.getUserInfo.observeAsState()
     val username=authVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME
     ) ?: NO_USERNAME
-    Column {
-        ButtonClickItem(desc = "Click To see",onClick ={profileVM.getUserInfo(username)
-            createVM.getUserMeme(username)
+    Column (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp, bottom = 100.dp, start = 10.dp, end = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally){
+        ButtonClickItem(desc = "Click To see", onClick ={profileVM.getUserInfo(username)
         } )
         var memeList= listOf<Meme>()
         var trashList= listOf<Meme>()
@@ -100,13 +93,16 @@ fun ProfileScreen(navController: NavHostController) {
                 }
             }
         }
-        ButtonClickItem(desc = "Load all $username meme",onClick = { createVM.getUserMeme(username)
-            visiblefunction = "meme"})
-        ButtonClickItem(desc = "Load all $username trash",onClick = { createVM.getUserTrash(username)
-            visiblefunction = "trash"
-        })
-        ButtonClickItem(desc = username,onClick = {})
-        if(visiblefunction == "meme")MemeList(meme = memeList,navController)
+        Spacer(modifier =Modifier.padding(5.dp))
+        Row(Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly){
+            ButtonClickItem(desc = "Load All memes", onClick = { createVM.getUserMeme(username)
+                visiblefunction = "meme"},style = if(visiblefunction == "meme") MaterialTheme.typography.body1 else MaterialTheme.typography.button)
+            ButtonClickItem(desc = "Load all trash", onClick = { createVM.getUserTrash(username)
+                visiblefunction = "trash"},style = if(visiblefunction == "trash") MaterialTheme.typography.body1 else MaterialTheme.typography.button)
+        }
+        ButtonClickItem(desc = username, onClick = {})
+        if(visiblefunction == "meme") MemeList(username = username, meme = memeList, navController = navController)
         if(visiblefunction == "trash") TrashList(meme = trashList, navController)
     }
 }
@@ -116,7 +112,14 @@ fun OtherProfileUsername(navController: NavHostController, username: String){
     val createVM = hiltViewModel<CreateMemeViewModel>()
     val uiState= profileVM.getUserInfo.observeAsState()
 
-        Column {
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(top = 10.dp, bottom = 100.dp, start = 10.dp, end = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally){
+            ButtonClickItem(desc = "Click To see", onClick ={profileVM.getUserInfo(username)
+            } )
             var memeList= listOf<Meme>()
             var trashList= listOf<Meme>()
             var visiblefunction by remember { mutableStateOf("")}
@@ -170,15 +173,18 @@ fun OtherProfileUsername(navController: NavHostController, username: String){
                     }
                 }
             }
-            ButtonClickItem(desc = "Click To see",onClick ={profileVM.getUserInfo(username)})
-            ButtonClickItem(desc = "Load all $username meme",onClick = { createVM.getUserMeme(username)
-                visiblefunction = "meme"})
-            ButtonClickItem(desc = "Load all $username trash",onClick = { createVM.getUserTrash(username)
-                visiblefunction = "trash"
-            })
-            ButtonClickItem(desc = username,onClick = {})
+            Spacer(modifier =Modifier.padding(5.dp))
+            Row(Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly){
+                ButtonClickItem(desc = "Load All memes", onClick = { createVM.getUserMeme(username)
+                    visiblefunction = "meme"})
+                ButtonClickItem(desc = "Load All trash", onClick = { createVM.getUserTrash(username)
+                    visiblefunction = "trash"
+                })
+            }
+            ButtonClickItem(desc = username, onClick = {})
 
-            if(visiblefunction == "meme")MemeList(meme = memeList,navController)
+            if(visiblefunction == "meme")MemeList(username,memeList,navController)
             if(visiblefunction == "trash") TrashList(meme = trashList, navController)
         }
     }
@@ -186,9 +192,16 @@ fun OtherProfileUsername(navController: NavHostController, username: String){
 @Composable
 fun UserScreen(user: User?){
     user?.let {
-        Row (Modifier.fillMaxWidth(),Arrangement.SpaceAround){
+        Row (
+            Modifier
+                .fillMaxWidth()
+                .padding(12.dp),Arrangement.SpaceBetween){
             ImageProfileItem(oom = user.image, username = user.username)
+            Spacer(modifier = Modifier.padding(5.dp))
+            Text(user.bio,style = MaterialTheme.typography.caption)
+            Spacer(modifier = Modifier.padding(5.dp))
             ProfileInfoItem(number = user.score.toString(), desc = "Score")
+            Spacer(modifier = Modifier.padding(5.dp))
         }
     }
 }

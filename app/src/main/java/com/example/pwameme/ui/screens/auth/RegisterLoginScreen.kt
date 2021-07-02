@@ -63,7 +63,7 @@ fun Register(navController: NavHostController, vm: AuthViewModel) {
         Spacer(Modifier.size(7.dp))
         TextFieldOutlined("Repeat Password",repeatPasswordState)
         Spacer(Modifier.size(40.dp))
-        ButtonClickItem("Register",onClick= {
+        ButtonClickItem("Register", onClick = {
             vm.registerUser(usernameState.text,passwordState.text,repeatPasswordState.text)
         })
         Spacer(modifier = Modifier.padding(24.dp))
@@ -135,7 +135,7 @@ fun Login(navController: NavHostController, vm: AuthViewModel) {
         Spacer(Modifier.size(7.dp))
         TextFieldOutlined("Password",passwordState)
         Spacer(Modifier.size(40.dp))
-        ButtonClickItem("Login",onClick= {
+        ButtonClickItem("Login", onClick = {
             vm.loginUser(usernameState.text,passwordState.text)
         })
         Spacer(modifier = Modifier.padding(24.dp))

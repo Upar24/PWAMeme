@@ -10,12 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,6 +25,7 @@ import com.example.pwameme.ui.screens.auth.AuthViewModel
 import com.example.pwameme.ui.screens.component.ButtonClickItem
 import com.example.pwameme.ui.screens.component.ImageProfileItem
 import com.example.pwameme.ui.screens.component.ProfileInfoItem
+import com.example.pwameme.ui.theme.Black
 import com.example.pwameme.util.Constants.KEY_LOGGED_IN_PASSWORD
 import com.example.pwameme.util.Constants.KEY_LOGGED_IN_USERNAME
 import com.example.pwameme.util.Constants.LOGIN
@@ -59,8 +59,8 @@ fun PWAMemeTopNavigation(
                     .align(Alignment.CenterVertically)
             )
             Text(
-                text = "",
-                color = MaterialTheme.colors.onPrimary,
+                text = "Meme Keyword Generator",
+                color = Black,
                 style = TextStyle(
                     fontWeight = FontWeight.Medium,
                     fontSize = 20.sp,
@@ -71,25 +71,6 @@ fun PWAMemeTopNavigation(
                     .padding(start = 16.dp, end = 16.dp)
             )
         }
-        Image(
-            painterResource(id = R.drawable.search),
-            contentDescription = "Search Menu",
-            modifier= Modifier
-                .clickable {
-                    navController.navigate("Search") {
-                        navController.graph.startDestinationRoute?.let {
-                            popUpTo(it) {
-                                saveState = true
-                            }
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-                .height(40.dp)
-                .padding(10.dp, end = 16.dp)
-                .align(Alignment.CenterVertically)
-        )
     }
 }
 
@@ -108,14 +89,23 @@ fun PWAMemeDrawerNavigation(
 
         AppdrawerHeader(closeDrawerAction)
         Divider()
-        AppdrawerBody(closeDrawerAction,navController,items)
-        Divider()
-        AppdrawerFooter(navController,closeDrawerAction)
+        Column (
+            modifier= modifier
+            .fillMaxSize().padding(20.dp),
+            Arrangement.SpaceEvenly,
+            Alignment.CenterHorizontally,
+        ){
+            AppdrawerBody(closeDrawerAction,navController,items)
+            Divider()
+            AppdrawerFooter(navController,closeDrawerAction)
+        }
     }
 }
 @Composable
 fun AppdrawerHeader(closeDrawerAction: () -> Unit
 ) {
+    val AuthVM = hiltViewModel<AuthViewModel>()
+    val username = AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) ?: NO_USERNAME
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,12 +127,8 @@ fun AppdrawerHeader(closeDrawerAction: () -> Unit
             )
             Text(
                 text = "PWAMemes",
-                color = MaterialTheme.colors.onPrimary,
-                style = TextStyle(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 20.sp,
-                    letterSpacing = 0.15.sp
-                ),
+                color = Black,
+                style = MaterialTheme.typography.subtitle1,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .padding(start = 16.dp, end = 16.dp)
@@ -155,8 +141,9 @@ fun AppdrawerHeader(closeDrawerAction: () -> Unit
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ImageProfileItem(oom = "R.drawable.image0", username = "Testing")
-            ProfileInfoItem(number = "8", desc = "Coins" )
+            Text(text = username,Modifier.fillMaxWidth(),
+                textAlign= TextAlign.Center,
+                style = MaterialTheme.typography.body2)
         }
     }
 
@@ -167,8 +154,6 @@ fun AppdrawerBody(
     navController: NavHostController,
     items: List<BottomNavigationScreens>
 ) {
-//    val navBackStackEntry by navController.currentBackStackEntryAsState()
-//    val currentRoute= navBackStackEntry?.destination?.route
     items.forEach {item ->
         Row(
             modifier = Modifier
@@ -211,20 +196,9 @@ fun AppdrawerFooter(
     )
     {
         val x by AuthVM.desc.observeAsState(if(AuthVM.sharedPref.getString(KEY_LOGGED_IN_USERNAME,NO_USERNAME) == NO_USERNAME)LOGIN else LOGOUT)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .height(50.dp)
-                .clickable { }
-                .padding(10.dp)
-        ) {
-            Text(text = x)
-            Icon(
-                painter = painterResource(R.drawable.yinyang), contentDescription = "theme",
-            )
-            Text("Theme")
-        }
-        ButtonClickItem(desc = x,
+
+        ButtonClickItem(
+            desc = x,
             onClick = {
                 closeDrawerAction()
                 if (x == LOGIN) {
@@ -265,14 +239,14 @@ fun PWAMemeBottomNavigation(
                 icon= { Image(
                     painterResource(id =screen.icon),
                     contentDescription = screen.route,
-                    modifier = Modifier.height(30.dp)
+                    modifier = Modifier.height(25.dp)
                 )
                 },
                 label={
                     Text(
                         stringResource(id = screen.resourceId),
-                        color= Color.LightGray,
-                        fontSize = 14.sp,fontWeight = FontWeight.Bold
+                        color= Black,
+                        fontSize = 16.sp,fontWeight = FontWeight.Bold
                     )
                 },
                 selected = currentRoute==screen.route,

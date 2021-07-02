@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pwameme.data.local.entities.Meme
 import com.example.pwameme.data.local.entities.User
+import com.example.pwameme.data.remote.responses.SimpleResponse
 import com.example.pwameme.repository.MemeRepository
 import com.example.pwameme.util.Constants.NO_USERNAME
 import com.example.pwameme.util.Event
@@ -32,10 +33,10 @@ class CreateMemeViewModel @Inject constructor(
     val userMeme : LiveData<Event<Resource<List<Meme>>>> = _userMeme
     private val _userTrash = MutableLiveData<Event<Resource<List<Meme>>>>()
     val userTrash : LiveData<Event<Resource<List<Meme>>>> = _userTrash
-    private val _likeStatus = MutableLiveData<Event<Resource<Boolean>>>()
-    val likeStatus : LiveData<Event<Resource<Boolean>>> = _likeStatus
-    private val _saveStatus = MutableLiveData<Event<Resource<Boolean>>>()
-    val saveStatus : LiveData<Event<Resource<Boolean>>> = _saveStatus
+    private val _likeStatus = MutableLiveData<Event<Resource<SimpleResponse>>>()
+    val likeStatus : LiveData<Event<Resource<SimpleResponse>>> = _likeStatus
+    private val _saveStatus = MutableLiveData<Event<Resource<SimpleResponse>>>()
+    val saveStatus : LiveData<Event<Resource<SimpleResponse>>> = _saveStatus
 
 
     fun getUserMeme(username: String){
@@ -83,8 +84,12 @@ class CreateMemeViewModel @Inject constructor(
         }
     }
 
-    fun saveMeme(meme:Meme){
+    fun saveMeme(username: String,meme:Meme){
         _transactionStatus.postValue(Event(Resource.loading(null)))
+        if(username == NO_USERNAME || username == ""){
+            _trashStatus.postValue(Event(Resource.error("Please Login First",null)))
+            return
+        }
         viewModelScope.launch{
             val result = repository.saveMeme(meme)
             _transactionStatus.postValue(Event(result))
@@ -92,20 +97,32 @@ class CreateMemeViewModel @Inject constructor(
     }
     fun decreaseScore(username:String, decreaseScore: Int){
         _randomStatus.postValue(Event(Resource.loading(null)))
+        if(username == NO_USERNAME || username == ""){
+            _randomStatus.postValue(Event(Resource.error("Please Login First",null)))
+            return
+        }
         viewModelScope.launch {
             val result= repository.decreaseScore(username,decreaseScore)
             _randomStatus.postValue(Event(result))
         }
     }
-    fun toggleLike(meme:Meme){
+    fun toggleLike(username: String,meme:Meme){
         _likeStatus.postValue(Event(Resource.loading(null)))
+        if(username == NO_USERNAME || username == ""){
+            _likeStatus.postValue(Event(Resource.error("Please Login First",null)))
+            return
+        }
         viewModelScope.launch {
             val result = repository.toggleLike(meme)
             _likeStatus.postValue(Event(result))
         }
     }
-    fun toggleSave(meme:Meme){
+    fun toggleSave(username:String,meme:Meme){
         _saveStatus.postValue(Event(Resource.loading(null)))
+        if(username == NO_USERNAME || username == ""){
+            _saveStatus.postValue(Event(Resource.error("Please Login First",null)))
+            return
+        }
         viewModelScope.launch {
             val result= repository.toggleSave(meme)
             _saveStatus.postValue(Event(result))

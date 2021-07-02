@@ -49,12 +49,12 @@ interface MemeApi {
     @GET("/leaderboard")
     suspend fun getLeaderboard():Response<List<User>>
 
-    @GET("/getusermemes")
+    @POST("/getusermemes")
     suspend fun getUserMemes(
         @Body username : UserRequest
     ):Response<List<Meme>>
 
-    @GET("/getusertrash")
+    @POST("/getusertrash")
     suspend fun getUserTrash(
         @Body username : UserRequest
     ):Response<List<Meme>>
@@ -62,10 +62,10 @@ interface MemeApi {
     @POST("/togglelike")
     suspend fun toggleLike(
         @Body meme:Meme
-    ):Response<Boolean>
+    ):Response<SimpleResponse>
 
     @POST("/togglesave")
     suspend fun toggleSave(
         @Body meme:Meme
-    ):Response<Boolean>
+    ):Response<SimpleResponse>
 }

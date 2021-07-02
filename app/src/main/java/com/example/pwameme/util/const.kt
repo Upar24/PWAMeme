@@ -12,7 +12,7 @@ object Constants{
     const val TRASH = "trash"
     const val MEME = "meme"
     const val ENCRYPTED_SHARED_PREF_NAME = "enc_shared_pref"
-    const val KEY_AVATAR = "R.drawable.image"
-    val IGNORE_AUTH_URLS = listOf("/login","/register","/getAllPosts")
+    val IGNORE_AUTH_URLS = listOf("/login","/register","/getuserinfo","/getAllPosts","/getusermemes",
+        "/getusertrash")
 
 }

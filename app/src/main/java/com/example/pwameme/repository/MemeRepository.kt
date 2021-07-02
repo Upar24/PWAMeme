@@ -8,6 +8,7 @@ import com.example.pwameme.data.remote.MemeApi
 import com.example.pwameme.data.remote.requests.AccountRequest
 import com.example.pwameme.data.remote.requests.PointRequest
 import com.example.pwameme.data.remote.requests.UserRequest
+import com.example.pwameme.data.remote.responses.SimpleResponse
 import com.example.pwameme.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,7 +19,7 @@ class MemeRepository @Inject constructor(
     private val memeApi: MemeApi,
     private val context: Application
 ) {
-    val errorMessage =Resource.error("Couldnt connect to the server, check your internet connection", null)
+    val errorMessage =Resource.error(" Repo Couldnt connect to the server, check your internet connection", null)
     suspend fun login(username: String, password: String) = withContext(Dispatchers.IO) {
         try {
             val response = memeApi.login(AccountRequest(username, password))
