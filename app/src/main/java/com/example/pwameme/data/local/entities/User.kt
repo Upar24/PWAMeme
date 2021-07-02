@@ -11,7 +11,7 @@ data class User(
     val followers: List<String> = listOf(),
     val image: String = "0",
     val bio: String = "",
-    val score: Int = 0,
+    val score: Int = 1000,
     @PrimaryKey(autoGenerate = false)
     val _id:String= UUID.randomUUID().toString()
 )
