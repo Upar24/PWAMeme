@@ -255,7 +255,7 @@ fun ImageProfileItem(oom:String,username:String){
             )
         }
         Text(
-            text=username,//sharedPref
+            text=username,
             style=TextStyle(fontSize = 20.sp),
             modifier=Modifier.padding(bottom=5.dp),
             color= MaterialTheme.colors.primaryVariant
